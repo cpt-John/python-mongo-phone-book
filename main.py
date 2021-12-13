@@ -1,11 +1,12 @@
 # pip install dnspython
 # pip install pymongo[srv]
 # pip install colorama
+# pip install pandas
 
 import os
-import random as RD
 from pymongo import MongoClient
 import re
+import pandas as pd
 
 
 class Fore:
@@ -38,10 +39,28 @@ FIELDS = ['Name', 'Ph_number', 'Email']
 
 
 def db_init():
-    db_link = input("enter mongodb connection url: ")
-    client = MongoClient(db_link)
-    db = client.phone_book
-    return db.book
+    fileName = "db_link.txt"
+    db_link = ''
+    try:
+        file = open(fileName, "r")
+        db_link = file.read()
+        file.close()
+    except:
+        pass
+    link_exists = bool(db_link)
+    if not link_exists:
+        db_link = input("enter mongodb connection url: ")
+        file = open(fileName, "w")
+        file.write(db_link)
+        file.close()
+    client = ''
+    try:
+        client = MongoClient(db_link)
+        db = client.phone_book
+        return db.book
+    except Exception as e:
+        print("db connection failed")
+        raise Exception(e)
 
 
 def db_operation(db_collection, operation='r', condition={}, data={}, fields={}):
@@ -71,7 +90,7 @@ def pretty_print_statement(string, line='.', length=6, color=''):
 
 def validate(type, test_string):
     switch = {
-        "Name": re.compile(r"^[A-Za-z]{3,15}$"),
+        "Name": re.compile(r"^[A-Za-z]{3,15}\d+?$"),
         "Ph_number": re.compile(r"^\+?[0-9]{6,12}$"),
         "Email": re.compile(r"^\w{3,7}@\w{3,10}.\w{1,5}$")
     }
@@ -164,7 +183,11 @@ def search():
 
 def diaplay_all_contacts():
     contacts = search_helper()
-    display_contacts(contacts)
+    response = input("display as data frame? (y/n): ")
+    if response == 'y':
+        print(pd.DataFrame(contacts))
+    else:
+        display_contacts(contacts)
 
 
 def delete():
@@ -192,7 +215,7 @@ states = {  # Emulate frontend using cli
     1: {
         'query':
         lambda: input(
-            "create/search/delete/display_all? (c/s/d/disp): ")
+            "create/search/delete/display_all? (c/s/d/disp),(q/cls): ")
             .strip().lower(),
         'functions': {
             'c': {'f': save, 's': 1},
