@@ -90,7 +90,7 @@ def pretty_print_statement(string, line='.', length=6, color=''):
 
 def validate(type, test_string):
     switch = {
-        "Name": re.compile(r"^[A-Za-z]{3,15}\d+?$"),
+        "Name": re.compile(r"^[A-Za-z]{3,15}$"),
         "Ph_number": re.compile(r"^\+?[0-9]{6,12}$"),
         "Email": re.compile(r"^\w{3,7}@\w{3,10}.\w{1,5}$")
     }
